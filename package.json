@@ -1,9 +1,11 @@
 {
   "name": "waldo-top",
-  "version": "1.0.2",
-  "description": "",
+  "version": "1.0.3",
+  "description": "Show your IP location on a top-style map.",
   "main": "app.js",
-  "bin": "./bin/waldo.js",
+  "bin": {
+    "waldo": "./bin/waldo.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
