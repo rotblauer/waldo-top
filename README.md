@@ -5,4 +5,4 @@ address is coming from, along with city, country code, and ip address.
 `npm install -g waldo-top`
 
 ### Use it
-`wip`
+`waldo`
