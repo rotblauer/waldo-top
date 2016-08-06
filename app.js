@@ -38,10 +38,10 @@ var lsofTable = grid.set(4, 0, 6, 6, contrib.table, {
   // height: ,
   // border: ,
   columnSpacing: 1, // in chars
-  columnWidth:         [10,     6,     3,     5,     40,     5,      14] // in chars
+  columnWidth:         [10,     6,     3,     5,     40,    14] // in chars
 });
 
-var lsofTableHeaders = ['name', 'pid', 'own', 'ipT', 'url', 'port', 'status'];
+var lsofTableHeaders = ['name', 'pid', 'own', 'ipT', 'url', 'status'];
 
 var hasInternet = false,
     fastness,
@@ -119,7 +119,7 @@ function pollLsof() {
       var add = words[8]; // 10.113.1.6:56084->lga15s47-in-f14.1e100.net:https
       var status = words[9];
 
-      lineData.push(name, pid, owner, ipV, add, 'port', status);
+      lineData.push(name, pid, owner, ipV, add, status);
       if (lineData.length > 1) {
         lsofTableData.push(lineData);
       }
