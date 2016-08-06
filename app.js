@@ -12,7 +12,8 @@ var blessed = require('blessed'),
     maxmind = require('maxmind'), // maxmind geoip lookup
     dns = require('dns'),
     fastApi = require('./fast-api')
-child_process = require('child_process');
+child_process = require('child_process'),
+              appRoot = require('app-root-path');
 
 // Drawable objects
 
@@ -57,7 +58,7 @@ var hasInternet = false,
 var mapMarkerMe;
 var mapMarkers = [];
 var lsofTableData = [];
-var ipLookup = maxmind.open('data/GeoLite2-City.mmdb');
+var ipLookup = maxmind.open(appRoot + '/data/GeoLite2-City.mmdb');
 
 
 var haveInternet = function () {
