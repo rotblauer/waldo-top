@@ -13,7 +13,7 @@ var blessed = require('blessed'),
     dns = require('dns'),
     fastApi = require('./fast-api')
 child_process = require('child_process'),
-              appRoot = require('app-root-path');
+              node_path = require('global-modules');
 
 // Drawable objects
 
@@ -58,7 +58,7 @@ var hasInternet = false,
 var mapMarkerMe;
 var mapMarkers = [];
 var lsofTableData = [];
-var ipLookup = maxmind.open(appRoot + '/waldo-top/data/GeoLite2-City.mmdb');
+var ipLookup = maxmind.open(node_path + '/waldo-top/data/GeoLite2-City.mmdb');
 
 
 var haveInternet = function () {
