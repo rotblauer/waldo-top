@@ -58,7 +58,7 @@ var hasInternet = false,
 var mapMarkerMe;
 var mapMarkers = [];
 var lsofTableData = [];
-var ipLookup = maxmind.open(appRoot + '/data/GeoLite2-City.mmdb');
+var ipLookup = maxmind.open(appRoot + '/waldo-top/data/GeoLite2-City.mmdb');
 
 
 var haveInternet = function () {
