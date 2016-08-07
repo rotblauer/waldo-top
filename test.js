@@ -1,5 +1,6 @@
 var blessed = require('blessed'), contrib = require('blessed-contrib'),
     request = require('request'),
+    dns = require('dns'),
     exec = require('child_process').exec,
     screen = blessed.screen(),
     grid = new contrib.grid({
@@ -103,17 +104,17 @@ function pollLsof() {
       var add = words[8]; // 10.113.1.6:56084->lga15s47-in-f14.1e100.net:https
       var status = words[9];
 
-      var s = add.split('->');
-      if (s[1]) {
-        ss = s[1].split(':');
-        if (maxmind.validate(ss[0])) {
-          var d = lookup.get(ss[0]);
-          console.log('*****' + ss[0]);
-          console.log(d);
-        }
-      }
+      // var s = add.split('->');
+      // if (s[1]) {
+      //   ss = s[1].split(':');
+      //   if (maxmind.validate(ss[0])) {
+      //     var d = lookup.get(ss[0]);
+      //     console.log('*****' + ss[0]);
+      //     console.log(d);
+      //   }
+      // }
 
-      // console.log(name, pid, owner, ipV, add, 'port', status);
+      console.log(name, pid, owner, ipV, add, 'port', status);
 
       // lineData.push(name, pid, owner, ipV, add, 'port', status);
 
@@ -125,6 +126,11 @@ function pollLsof() {
     // if (data.length > 0) {
     //   drawTable(data);
     // }
+  });
+}
+function dnsResolve(hostname) {
+  return dns.resolve(hostname, function (addresses) {
+    console.log(addresses);
   });
 }
 
@@ -144,6 +150,7 @@ function init() {
   //   console.log('stderr', stderr);
   // });
   pollLsof();
+  // dnsResolve('qg-in-f189.1e100.net');
 }
 
 init();

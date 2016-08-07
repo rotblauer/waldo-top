@@ -17,7 +17,12 @@ child_process = require('child_process'),
 
 // Drawable objects
 
-var mark = grid.set(0, 0, 1, 5, blessed.text);
+var mark = grid.set(0, 0, 1, 5, blessed.text, {style: {fg: 'blue'}});
+var instruction = grid.set(0, 5, 1, 3, blessed.text);
+instruction.setText('dd - kill, s - filter status');
+var sortingState = grid.set(0, 8, 1, 2, blessed.text, {style: {fg: 'green'}});
+sortingState.setText('all');
+
 // var mark =  blessed.text({top: 'top',
 //                         left: 'left',
 //                         // width: headerText.length,
@@ -28,9 +33,9 @@ var mark = grid.set(0, 0, 1, 5, blessed.text);
 var map = grid.set(1, 0, 5, 5, contrib.map, {
   // label: ''
 });
-var lsofTable = grid.set(0, 5, 6, 5, contrib.table, {
+var lsofTable = grid.set(1, 5, 5, 5, contrib.table, {
   keys: true,
-  fg: 'white',
+  fg: 'red',
   selectedFg: 'white',
   selectedBg: 'blue',
   interactive: true,
@@ -39,10 +44,10 @@ var lsofTable = grid.set(0, 5, 6, 5, contrib.table, {
   // height: ,
   // border: ,
   columnSpacing: 1, // in chars
-  columnWidth:         [10,     6,     3,     5,     40,    14] // in chars
+  columnWidth:         [10,     6,     3,     5,     50] // in chars
 });
 
-var lsofTableHeaders = ['name', 'pid', 'own', 'ipT', 'url', 'status'];
+var lsofTableHeaders = ['name', 'pid', 'own', '', ''];
 
 var hasInternet = false,
     fastness,
@@ -94,6 +99,23 @@ function setMyIpDatas(err, res, body) {
   // screen.render();
 };
 
+var sortingBy = 0; // sort lsofers by status "(LISTEN)", "(ESTABLISHED)", "", "(CLOSED_WAITING)" *cw i think...
+var possibleStatuses = ['all', '(LISTEN)', '(ESTABLISHED)', '(CLOSED_WAITING)'];
+function cycleSortingBy() {
+  sortingBy++; // increment, ie -> 1, -> 6, -> 10
+  sortingBy = sortingBy % possibleStatuses.length;
+  if ( possibleStatuses[sortingBy] === 'all') {
+    sortingState.setText('all');
+  } else {
+    if (possibleStatuses[sortingBy] === 'undefined') {
+      sortingState.setText('undefined');
+    } else {
+      sortingState.setText(possibleStatuses[sortingBy]);
+    }
+  }
+  screen.render();
+}
+
 function pollLsof() {
   holder = []; // so we don't have a briefly empty array which could return undefined for a selection on user input
   var ipMapMarkers = [];
@@ -120,40 +142,50 @@ function pollLsof() {
       var add = words[8]; // 10.113.1.6:56084->lga15s47-in-f14.1e100.net:https
       var status = words[9];
 
-      lineData.push(name, pid, owner, ipV, add, status);
-      if (lineData.length > 1) {
-        holder.push(lineData);
-      }
+      // lineData.push(name, pid, owner, ipV, add, status);
+      lineData.push(name, pid, owner, ipV, add + ' ' + status);
 
-      var s = add.split('->');
-      if (s[1]) {
-        var ss = s[1].split(':');
-        var ip = ss[0];
-        if (maxmind.validate(ip)) {
-          var ipData = ipLookup.get(ip);
-          if (ipData) {
-            var mapMark = {
-              "lat": ipData.location.latitude.toString(),
-              "lon": ipData.location.longitude.toString(),
-              char: "x " + name,
-              color: "red"
-            };
-            if (name === 'ssh') {
-              mapMark.color = 'yellow';
-              mapMark.char = 'x'
-            }
-            ipMapMarkers.push(mapMark);
-          }
+      // implement sorting by status
+      if (possibleStatuses[sortingBy] !== 'all') {
+        if (status === possibleStatuses[sortingBy]) {
+          // only push lines with statuses that match sortingBy
+          holder.push(lineData);
+          addMarkerToMarkersFromAddress(add, name, ipMapMarkers);
         }
+      } else {
+        // push em all if sorting by is null
+        holder.push(lineData);
+        addMarkerToMarkersFromAddress(add, name, ipMapMarkers);
       }
     }
-    if (holder.length > 0) {
-      lsofTableData = holder;
-      drawTable(holder);
-    }
+    lsofTableData = holder;
+    drawTable(holder);
     ipMapMarkers.push(mapMarkerMe);
     drawMap(ipMapMarkers);
   });
+}
+function addMarkerToMarkersFromAddress(add, name, markers) {
+  var s = add.split('->');
+  if (s[1]) {
+    var ss = s[1].split(':');
+    var ip = ss[0];
+    if (maxmind.validate(ip)) {
+      var ipData = ipLookup.get(ip);
+      if (ipData) {
+        var mapMark = {
+          "lat": ipData.location.latitude.toString(),
+          "lon": ipData.location.longitude.toString(),
+          char: "x " + name.substring(0,3),
+          color: "red"
+        };
+        if (name === 'ssh') {
+          mapMark.color = 'yellow';
+          mapMark.char = 'x'
+        }
+        markers.push(mapMark);
+      }
+    }
+  }
 }
 function drawText(text) {
   mark.setText(text);
@@ -198,6 +230,10 @@ if (haveInternet()) {
 
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
     return process.exit(0)
+});
+
+screen.key(['s'], function (ch, key) {
+  return cycleSortingBy();
 });
 
 // screen.key(['a'], function (ch, key) {
