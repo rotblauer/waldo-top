@@ -5,8 +5,8 @@ var blessed = require('blessed'),
     request = require('request'),
     screen = blessed.screen(),
     grid = new contrib.grid({
-        rows: 10,
-        cols: 6,
+        rows: 6,
+        cols: 10,
         screen: screen
     }),
     maxmind = require('maxmind'), // maxmind geoip lookup
@@ -17,7 +17,7 @@ child_process = require('child_process'),
 
 // Drawable objects
 
-var mark = grid.set(0, 0, 1, 6, blessed.text);
+var mark = grid.set(0, 0, 1, 5, blessed.text);
 // var mark =  blessed.text({top: 'top',
 //                         left: 'left',
 //                         // width: headerText.length,
@@ -25,10 +25,10 @@ var mark = grid.set(0, 0, 1, 6, blessed.text);
 //                         // fg: loadedTheme.title.fg
 //                         // content: headerText,
 //                          });
-var map = grid.set(1, 0, 3, 6, contrib.map, {
+var map = grid.set(1, 0, 5, 5, contrib.map, {
   // label: ''
 });
-var lsofTable = grid.set(4, 0, 6, 6, contrib.table, {
+var lsofTable = grid.set(0, 5, 6, 5, contrib.table, {
   keys: true,
   fg: 'white',
   selectedFg: 'white',
@@ -95,7 +95,7 @@ function setMyIpDatas(err, res, body) {
 };
 
 function pollLsof() {
-  lsofTableData = [];
+  holder = []; // so we don't have a briefly empty array which could return undefined for a selection on user input
   var ipMapMarkers = [];
   child_process.exec('lsof -i | grep TCP | sort -u  -k1,1 -k2,2 -k9,9', function (err, stdout, stderr) {
     // drawText(stdout);
@@ -107,7 +107,7 @@ function pollLsof() {
 
       var words = currentLine.split(' ');
 
-      // lsofTableData.push(words);
+      // holder.push(words);
 
       var name = words[0]; // com.apple, Safari, ruby, Python, node, ssh ...
       var pid = words[1]; // 4798
@@ -122,7 +122,7 @@ function pollLsof() {
 
       lineData.push(name, pid, owner, ipV, add, status);
       if (lineData.length > 1) {
-        lsofTableData.push(lineData);
+        holder.push(lineData);
       }
 
       var s = add.split('->');
@@ -147,8 +147,9 @@ function pollLsof() {
         }
       }
     }
-    if (lsofTableData.length > 0) {
-      drawTable(lsofTableData);
+    if (holder.length > 0) {
+      lsofTableData = holder;
+      drawTable(holder);
     }
     ipMapMarkers.push(mapMarkerMe);
     drawMap(ipMapMarkers);
@@ -170,6 +171,7 @@ function drawTable(data) {
     headers: lsofTableHeaders,
     data: data
   });
+  lsofTable.focus();
   screen.render();
 }
 
@@ -194,10 +196,24 @@ if (haveInternet()) {
   drawText('Internet is not connected.');
 }
 
-
-
-
-
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
     return process.exit(0)
 });
+
+// screen.key(['a'], function (ch, key) {
+//   console.log(lsofTable.rows.selected); // yields index of selected row
+// });
+var lastKey = '';
+// kill process with dd
+screen.on('keypress', function (ch, key) {
+  if (lastKey == 'd' && key.name ==='d') {
+    var selectedProcess = lsofTableData[lsofTable.rows.selected];
+    var pid = selectedProcess[1];
+    child_process.exec('kill ' + pid + '', function (error, stdout, stderr) {
+      if (error !== null) {
+        console.log(error);
+      }
+    })
+  }
+  lastKey = key.name;
+})
