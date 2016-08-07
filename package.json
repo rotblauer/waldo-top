@@ -1,6 +1,6 @@
 {
   "name": "waldo-top",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Render your IP location along with all TCP connection on a top-style map.",
   "main": "app.js",
   "bin": {
