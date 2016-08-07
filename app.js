@@ -150,12 +150,12 @@ function pollLsof() {
         if (status === possibleStatuses[sortingBy]) {
           // only push lines with statuses that match sortingBy
           holder.push(lineData);
-          addMarkerToMarkersFromAddress(add, name, ipMapMarkers);
+          addMarkerToMarkersFromAddress(add, name, pid, ipMapMarkers);
         }
       } else {
         // push em all if sorting by is null
         holder.push(lineData);
-        addMarkerToMarkersFromAddress(add, name, ipMapMarkers);
+        addMarkerToMarkersFromAddress(add, name, pid, ipMapMarkers);
       }
     }
     lsofTableData = holder;
@@ -164,7 +164,7 @@ function pollLsof() {
     drawMap(ipMapMarkers);
   });
 }
-function addMarkerToMarkersFromAddress(add, name, markers) {
+function addMarkerToMarkersFromAddress(add, name, pid, markers) {
   var s = add.split('->');
   if (s[1]) {
     var ss = s[1].split(':');
@@ -175,7 +175,7 @@ function addMarkerToMarkersFromAddress(add, name, markers) {
         var mapMark = {
           "lat": ipData.location.latitude.toString(),
           "lon": ipData.location.longitude.toString(),
-          char: "x " + name.substring(0,3),
+          char: "x " + pid,
           color: "red"
         };
         if (name === 'ssh') {
